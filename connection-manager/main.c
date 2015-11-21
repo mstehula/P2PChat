@@ -16,7 +16,7 @@
 int main(int argc, char * argv[]) {
 
   int port_no = 25565, n, client_addr_len, error_check;
-  char input_buffer[256], output_buffer[256], inst[4];
+  char input_buffer[256], output_buffer[256], inst[4], data[252];
   struct sockaddr_in server_addr, client_addr;
 
 #if WINDOWS
@@ -82,9 +82,13 @@ int main(int argc, char * argv[]) {
       }
 
       strncpy(inst, input_buffer, 3);
+      strncpy(data, input_buffer + 4, 252);
 
       if(strcmp(inst, "GET")) {
         fprintf(stdout, "Instruction is a get!\n");
+        long id = atol(data);
+      } else if(strcmp(inst, "PUB")) {
+        fprintf(stdout, "Instruction is a publish!\n");
       }
 
       n = send(new_sock_fd, output_buffer, 256, 0);
