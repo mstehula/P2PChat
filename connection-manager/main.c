@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if WINDOWS
 #include <winsock2.h>
@@ -15,7 +16,7 @@
 int main(int argc, char * argv[]) {
 
   int port_no = 25565, n, client_addr_len, error_check;
-  char buffer[256];
+  char input_buffer[256], output_buffer[256], inst[4];
   struct sockaddr_in server_addr, client_addr;
 
 #if WINDOWS
@@ -41,8 +42,6 @@ int main(int argc, char * argv[]) {
     exit(1);
   }
 
-  memset(buffer, 0, 256);
-
   if(argc >= 2)
     port_no = atoi(argv[1]);
   server_addr.sin_family = AF_INET;
@@ -64,6 +63,8 @@ int main(int argc, char * argv[]) {
   fprintf(stdout, "Server Started, waiting for connections\n");
 
   client_addr_len = sizeof(client_addr);
+  memset(input_buffer, 0, 256);
+  memset(output_buffer, 0, 256);
   while(1) {
     new_sock_fd = accept(sock_fd, (struct sockaddr *) &client_addr, &client_addr_len);
     if(new_sock_fd < 0) {
@@ -73,16 +74,22 @@ int main(int argc, char * argv[]) {
 
     fprintf(stdout, "Connected to client, now reading\n");
 
-    char input_buffer[1];
-    int n;
     do {
-      n = recv(new_sock_fd, input_buffer, 1, 0);
+      n = recv(new_sock_fd, input_buffer, 256, 0);
       if(n < 0) {
         fprintf(stderr, "ERROR, cannot read input\n");
+        exit(1);
       }
-      fprintf(stdout, "%c", *input_buffer);
-    } while(n != 0 && *input_buffer != 'q');
 
-    fprintf(stdout, "\nClient connection closed\n");
+      strncpy(inst, input_buffer, 3);
+
+      if(strcmp(inst, "GET")) {
+        fprintf(stdout, "Instruction is a get!\n");
+      }
+
+      n = send(new_sock_fd, output_buffer, 256, 0);
+    } while(strcmp(input_buffer, "ACK"));
+
+    fprintf(stdout, "Client connection closed\n");
   }
 }
