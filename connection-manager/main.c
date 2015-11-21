@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
 
 #if WINDOWS
 #include <winsock2.h>
@@ -66,6 +67,9 @@ int main(int argc, char * argv[]) {
   memset(input_buffer, 0, 256);
   memset(output_buffer, 0, 256);
   while(1) {
+    fd_set rfds;
+    struct timeval tv;
+
     new_sock_fd = accept(sock_fd, (struct sockaddr *) &client_addr, &client_addr_len);
     if(new_sock_fd < 0) {
       fprintf(stderr, "ERROR, failed to accept a new client\n");
@@ -74,26 +78,19 @@ int main(int argc, char * argv[]) {
 
     fprintf(stdout, "Connected to client, now reading\n");
 
-    do {
-      n = recv(new_sock_fd, input_buffer, 256, 0);
-      if(n < 0) {
-        fprintf(stderr, "ERROR, cannot read input\n");
-        exit(1);
-      }
+    //Set the file descriptor set to zero, then add the
+    //client file descriptor
+    FD_ZERO(&rfds);
+    FD_SET(new_sock_fd + 1, &rfds)
 
-      strncpy(inst, input_buffer, 3);
-      strncpy(data, input_buffer + 4, 252);
+    //Select timeout is 5 seconds each select cycle
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
 
-      if(strcmp(inst, "GET")) {
-        fprintf(stdout, "Instruction is a get!\n");
-        long id = atol(data);
-      } else if(strcmp(inst, "PUB")) {
-        fprintf(stdout, "Instruction is a publish!\n");
-      }
-
-      n = send(new_sock_fd, output_buffer, 256, 0);
-    } while(strcmp(input_buffer, "ACK"));
+    error_check = select(1, &rtfs, NULL, NULL, &tv);
 
     fprintf(stdout, "Client connection closed\n");
   }
+
+  return 0;
 }
