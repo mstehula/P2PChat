@@ -2,6 +2,11 @@
 #define WINDOWS 0
 #endif
 
+#if !(WINDOWS)
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR 0
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,11 +38,7 @@ int main(int argc, char * argv[]) {
 #endif
 
   sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-#if WINDOWS
   if(sock_fd == INVALID_SOCKET) {
-#else
-  if(sock_fd < 0) {
-#endif
     fprintf(stderr, "ERROR opening socket, exiting\n");
     exit(1);
   }
@@ -70,5 +71,4 @@ int main(int argc, char * argv[]) {
 #endif
 
   return(0);
-
 }
