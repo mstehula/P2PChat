@@ -1,7 +1,7 @@
 CC= gcc
 
 WIN-C-FLAGS= -g -c -DWINDOWS
-WIN-L-FLAGS= -lws2_32
+WIN-L-FLAGS= -lws2_32 -lkernel32
 
 LINUX-C-FLAGS= -g -c
 LINUX-L-FLAGS=
